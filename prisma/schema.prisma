@@ -1,23 +1,11 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
     provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "sqlite"
-    // NOTE: When using postgresql, mysql or sqlserver, uncomment the @db.Text annotations in model Account below
-    // Further reading:
-    // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
-    // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
-    url      = env("DATABASE_URL")
-}
-
-model Example {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    provider     = "mysql"
+    url          = env("DATABASE_URL")
+    relationMode = "prisma"
 }
 
 // Necessary for Next auth
@@ -27,16 +15,17 @@ model Account {
     type              String
     provider          String
     providerAccountId String
-    refresh_token     String? // @db.Text
-    access_token      String? // @db.Text
+    refresh_token     String? @db.Text
+    access_token      String? @db.Text
     expires_at        Int?
     token_type        String?
     scope             String?
-    id_token          String? // @db.Text
+    id_token          String? @db.Text
     session_state     String?
     user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@unique([provider, providerAccountId])
+    @@index([userId])
 }
 
 model Session {
@@ -45,6 +34,13 @@ model Session {
     userId       String
     expires      DateTime
     user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
+}
+
+enum UserRole {
+    ADMIN
+    USER
 }
 
 model User {
@@ -53,8 +49,14 @@ model User {
     email         String?   @unique
     emailVerified DateTime?
     image         String?
+    teamId        String?
+    role          UserRole? @default(USER)
+    issues        Issue[]
     accounts      Account[]
     sessions      Session[]
+    Team          Team?     @relation(fields: [teamId], references: [id])
+
+    @@index([teamId])
 }
 
 model VerificationToken {
@@ -63,4 +65,65 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model Team {
+    id     String  @id @default(cuid())
+    name   String
+    domain String  @unique
+    avatar String?
+    boards Board[]
+    users  User[]
+}
+
+model Board {
+    id      String   @id @default(cuid())
+    name    String
+    teamId  String
+    columns Column[]
+    tags    Tag[]
+    Team    Team     @relation(fields: [teamId], references: [id])
+
+    @@index([teamId])
+}
+
+model Column {
+    id      String  @id @default(cuid())
+    name    String
+    boardId String
+    issues  Issue[]
+    board   Board   @relation(fields: [boardId], references: [id])
+
+    @@index([boardId])
+}
+
+enum IssuePriority {
+    HIGH
+    MEDIUM
+    LOW
+}
+
+model Issue {
+    id          String        @id @default(cuid())
+    name        String
+    description String        @db.Text
+    priority    IssuePriority @default(MEDIUM)
+    columnId    String
+    assigneeId  String
+    tags        Tag[]
+    assignee    User          @relation(fields: [assigneeId], references: [id])
+    column      Column        @relation(fields: [columnId], references: [id])
+
+    @@index([assigneeId])
+    @@index([columnId])
+}
+
+model Tag {
+    id      String  @id @default(cuid())
+    name    String
+    boardId String
+    issues  Issue[]
+    board   Board   @relation(fields: [boardId], references: [id])
+
+    @@index([boardId])
 }
