@@ -50,14 +50,13 @@ const config = {
 
     "func-style": ["error", "expression"],
     "prefer-const": "error",
-    "no-console": "warn",
+    // "no-console": "warn",
 
     "react/button-has-type": "error",
     "react/prop-types": "off",
     "react/no-array-index-key": "warn",
     "react/react-in-jsx-scope": "off",
     "react/jsx-uses-react": "off",
-    "react/jsx-no-bind": "warn",
 
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "off",
