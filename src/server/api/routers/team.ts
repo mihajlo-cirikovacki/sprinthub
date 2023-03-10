@@ -7,6 +7,7 @@ import {
 
 // TODO: avatar.z.refine() > condition for size.
 export const CreateTeamSchema = z.object({name: z.string(), domain: z.string(), avatar: z.any()})
+
 export type CreateTeamType = z.infer<typeof CreateTeamSchema>
 
 export const teamRouter = createTRPCRouter({

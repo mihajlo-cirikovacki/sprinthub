@@ -9,6 +9,8 @@ export const getAllBoardsSchema = z.object({teamId: z.string()})
 export const getOneBoardSchema = z.object({id: z.string()})
 export const createBoardSchema = z.object({name: z.string(), teamId: z.string()})
 
+export type CreateBoardType = z.infer<typeof createBoardSchema>
+
 export const boardRouter = createTRPCRouter({
   // QUERIES:
   getAll: protectedProcedure.input(getAllBoardsSchema).query(({ctx, input}) => ctx.prisma.board.findMany({
